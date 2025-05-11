@@ -47,6 +47,7 @@ def prepare_instrument_table(
         "product",
         "code",
         "year",
+        "value",
         "weight",
         "weight_c",
         "tariff"

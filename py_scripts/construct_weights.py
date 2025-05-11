@@ -33,7 +33,7 @@ def construct_weights(spark_path: str, customs_path: str):
             .assign(weight_c=lambda x: x.value / x.value_agg)\
             .drop(columns=["value_agg"])
     
-    return df.drop(columns=["value"])
+    return df
 
 
 def main(spark_path: str, customs_path: str, output_path: str):

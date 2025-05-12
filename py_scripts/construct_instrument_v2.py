@@ -52,7 +52,7 @@ def prepare_weights(
                 Reporter_ISO_N=lambda x: x.apply(code_to_reporter, axis=1),
             )
     print(len(df))
-    
+
     df = df.merge(
         tariffs_df.loc[tariffs_df["current_year"] == 2005,["Reporter_ISO_N", "ProductCode", "SimpleAverage"]],
         on=["Reporter_ISO_N", "ProductCode"],
@@ -130,7 +130,15 @@ def main(
 ):
     tariffs = pd.read_parquet(tariffs_path)
     weights = prepare_weights(spark_path=spark_path, customs_path=customs_path, tariffs_df=tariffs)
-    result = prepare_instrument_table(weights, tariffs)
+    df = prepare_instrument_table(weights, tariffs)
+
+    result = []
+    for _, item_df in tqdm(df.groupby(["okved_four", "product", "code"])):
+        item_df = item_df.sort_values(by=["year"])\
+                .assign(prev_tariff=lambda x: x.tariff.shift(1))
+        result.append(item_df)
+
+    result = pd.concat(result).assign(tariff_diff=lambda x: x.tariff - x.prev_tariff)
     result.to_parquet(output_path, index=False)
 
 

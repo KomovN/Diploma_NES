@@ -2,6 +2,7 @@ import os
 import fire
 import pandas as pd
 from typing import List
+from tqdm import tqdm
 
 # Пара код страны, год вхождения в EU
 EU = [
@@ -40,7 +41,15 @@ def prepare_instrument_table(
 
     result = pd.concat(result)
 
-    df = result.merge(tariffs, on=["Reporter_ISO_N", "ProductCode", "current_year"], how="inner")
+    df = result.merge(tariffs, on=["Reporter_ISO_N", "ProductCode", "current_year"], how="left")
+
+    result = []
+    for _, item_df in tqdm(df.groupby(["code", "product"])):
+        item_df = item_df.sort_values(by=["current_year"])\
+                    .assign(SimpleAverage=lambda x: x.SimpleAverage.ffill())
+        result.append(item_df)
+
+    df = pd.concat(result)
 
     cols = [
         "okved_four",

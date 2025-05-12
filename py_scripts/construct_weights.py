@@ -17,17 +17,18 @@ def construct_weights(spark_path: str, customs_path: str):
 
     # Form the dataset
     df = pd.merge(customs_df, spark_df, on=["INN", "year"], how="inner")
-    df = df.groupby(["okved_four", "product", "code"]).agg({"value": "sum"}).reset_index()
+    df = df.loc[df.value > 1000.]
+    df = df.groupby(["okved_four", "product", "code"]).agg({"value": "count"}).reset_index()
 
     # Aggregate weights by okved
-    agg_df = df.groupby(["okved_four"]).agg({"value": "sum"})\
+    agg_df = df.groupby(["okved_four"]).agg({"value": "count"})\
                 .reset_index().rename(columns={"value": "value_agg"})
     df = df.merge(agg_df, on=["okved_four"], how="inner")\
             .assign(weight=lambda x: x.value / x.value_agg)\
             .drop(columns=["value_agg"])
 
     # Aggregate weights by okved and country code
-    agg_df = df.groupby(["okved_four", "code"]).agg({"value": "sum"})\
+    agg_df = df.groupby(["okved_four", "code"]).agg({"value": "count"})\
                 .reset_index().rename(columns={"value": "value_agg"})
     df = df.merge(agg_df, on=["okved_four", "code"], how="inner")\
             .assign(weight_c=lambda x: x.value / x.value_agg)\

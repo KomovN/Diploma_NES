@@ -111,7 +111,8 @@ def prepare_instrument_table(
         "value",
         "weight",
         "weight_c",
-        "tariff"
+        "tariff",
+        "avg_tariff"
     ]
 
     df = df.assign(
@@ -129,6 +130,10 @@ def main(
         output_path: str      
 ):
     tariffs = pd.read_parquet(tariffs_path)
+    tariffs_agg = tariffs.groupby(["ProductCode", "current_year"])["SimpleAverage"].mean()\
+                .reset_index().rename(columns={"SimpleAverage": "avg_tariff"})
+    tariffs = tariffs.merge(tariffs_agg, on=["ProductCode", "current_year"], how="inner")
+
     weights = prepare_weights(spark_path=spark_path, customs_path=customs_path, tariffs_df=tariffs)
     df = prepare_instrument_table(weights, tariffs)
 

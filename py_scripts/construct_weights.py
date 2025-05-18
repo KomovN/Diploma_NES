@@ -18,7 +18,7 @@ def construct_weights(spark_path: str, customs_path: str):
     # Form the dataset
     df = pd.merge(customs_df, spark_df, on=["INN", "year"], how="inner")
     df = df.loc[df.value > 1000.]
-    df = df.groupby(["okved_four", "product", "code"]).agg({"value": "count"}).reset_index()
+    df = df.groupby(["okved_four", "product", "code"]).agg({"value": "sum"}).reset_index()
 
     # Aggregate weights by okved
     agg_df = df.groupby(["okved_four"]).agg({"value": "sum"})\

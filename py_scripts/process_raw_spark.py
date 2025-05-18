@@ -35,7 +35,7 @@ def process_raw_data(df: pd.DataFrame, *, source: str="CUR") -> pd.DataFrame:
         Form_2_Field_190="profit"
     )
 
-    DROPNA_SUBSET = ["INN", "assets"]
+    DROPNA_SUBSET = ["INN", "assets"] # short_debt, long_debt
 
     return df.loc[(df.Source == source) & (df.Year > 2004), COLUMNS]\
             .rename(columns=TO_RENAME)\
@@ -68,6 +68,7 @@ def main(data_dir: str, output_path: str=None, source: str="CUR") -> Optional[pd
     print("All files processed!")
 
     result = pd.concat(result)
+    print(len(result))
     if output_path is not None:
         result.to_parquet(output_path, index=False)
     else:

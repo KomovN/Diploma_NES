@@ -152,9 +152,10 @@ def write_to_csv(df: pd.DataFrame, output_path: str):
     inns = pd.DataFrame(inns, columns=["inn"])\
         .reset_index().rename(columns={"index": "firm_id"})
 
-    data = data.merge(inns, on=["inn"], how="inner")
+    data = data.merge(inns, on=["inn"], how="inner")\
+                .assign(alternative_iv = lambda x: x["instrument"] * (1 + x["num_countries_prev_log"]))
     print("Final dataset length: {}".format(len(data)))
-    data.loc[:,["firm_id"] + FINAL_COLS].to_csv(output_path, index=False)
+    data.loc[:,["firm_id"] + FINAL_COLS + ["alternative_iv"]].to_csv(output_path, index=False)
 
 
 def main(
@@ -168,8 +169,12 @@ def main(
     spark_df.columns = [item.lower() for item in spark_df.columns]
     print("Len of Spark table: {}".format(len(spark_df)))
 
-    ruslana_df = pd.read_parquet(ruslana_path)
+    ruslana_df = pd.read_parquet(ruslana_path)\
+                    .drop_duplicates()
     ruslana_df.columns = [item.lower() for item in ruslana_df.columns]
+    ruslana_agg = ruslana_df.drop_duplicates().groupby(["inn", "year"]).count().reset_index().sort_values(by="empl")
+    ruslana_agg = ruslana_agg.loc[ruslana_agg.empl == 1].drop("empl", axis=1)
+    ruslana_df = ruslana_agg.merge(ruslana_df.drop_duplicates(), on=["inn", "year"], how="left")
     print("Len of Ruslana table: {}".format(len(ruslana_df)))
 
     gtd_df = prepare_gtd_df(gtd_path)

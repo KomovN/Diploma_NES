@@ -121,20 +121,27 @@ def filter_data(df: pd.DataFrame):
                 leverage=lambda x: x.debt / x.assets, 
                 log_assets=lambda x: np.log(x.assets),
                 tangibility=lambda x: x.tang_assets / x.assets, 
-                profitability=lambda x: x.revenue / x.assets
+                profitability=lambda x: x.profit / x.assets
             )
     print("Assets more then 0: {}".format(len(data)))
 
-    left, right = data.assets.quantile([0.025, 0.975]).tolist()
+    left, right = data.assets.quantile([0.01, 0.99]).tolist()
     filter_cond = (
         (data["short_leverage"] >= 0.) &
         (data["long_leverage"] >= 0.) &
         (data["leverage"] <= 1.) &
         (data.revenue > 0.0) &
-        (data.assets > left) &
-        (data.assets < right) &
         (data.empl >= 5.0)
     )
+
+    filtering_cols = [
+        "assets",
+        "tangibility",
+        "profitability"
+    ]
+    for item in filtering_cols:
+        left, right = data[item].quantile([0.01, 0.99]).tolist()
+        filter_cond = filter_cond & (data[item] > left) & (data[item] < right)
 
     data = data.loc[filter_cond]
     print("Employees no less than 5: {}".format(len(data)))

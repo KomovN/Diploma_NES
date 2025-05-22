@@ -7,7 +7,8 @@ all: process_raw_spark process_raw_customs prepare_tariffs construct_instrument 
 process_raw_spark:
 	python $(PY_SCRIPTS)/process_raw_spark.py \
 	--data_dir $(DATA_DIR)/spark/raw_data \
-	--output_path $(DATA_DIR)/spark/cur_spark_data_v2.parquet
+	--output_path $(DATA_DIR)/spark/nxt_spark_data_v2.parquet \
+	--source NXT
 
 process_raw_customs:
 	python $(PY_SCRIPTS)/process_raw_customs.py \
@@ -29,8 +30,8 @@ construct_instrument:
 
 prepare_data_simple:
 	python $(PY_SCRIPTS)/prepare_data_simple_v1.py \
-	--spark_path $(DATA_DIR)/spark/cur_spark_data_v2.parquet \
+	--spark_path $(DATA_DIR)/spark/nxt_spark_data_v2.parquet \
 	--ruslana_path $(DATA_DIR)/ruslana/ruslana.parquet \
 	--gtd_path $(DATA_DIR)/gtd/gtd_processed \
 	--iv_path $(DATA_DIR)/instrument/iv.parquet \
-	--output_path $(DATA_DIR)/testing/final_data_simple_v1.csv
+	--output_path $(DATA_DIR)/testing/nxt_final_data_simple_v1.csv

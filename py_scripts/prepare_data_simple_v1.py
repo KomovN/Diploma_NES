@@ -135,6 +135,7 @@ def filter_data(df: pd.DataFrame):
     )
 
     filtering_cols = [
+        "short_debt",
         "assets",
         "tangibility",
         "profitability"

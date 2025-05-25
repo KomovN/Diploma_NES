@@ -18,20 +18,20 @@ def process_raw_data(df: pd.DataFrame, *, source: str="CUR") -> pd.DataFrame:
         "Year",
         "Form_1_Field_290",
         "Form_1_Field_300",
-        "Form_1_Field_690",
         "Form_2_Field_010",
-        "Form_2_Field_100",
         "Form_2_Field_190",
-        "Form_1_Field_590"
+        "Form_1_Field_510",
+        "Form_1_Field_610",
+        "Form_1_Field_625"
     ]
 
     TO_RENAME = dict(
         Form_1_Field_290="tang_assets", 
         Form_1_Field_300="assets",
-        Form_1_Field_590="long_debt",
-        Form_1_Field_690="short_debt",
+        Form_1_Field_510="long_debt",
+        Form_1_Field_610="short_debt",
+        Form_1_Field_625="short_debt_others",
         Form_2_Field_010="revenue",
-        Form_2_Field_100="opex",
         Form_2_Field_190="profit"
     )
 
@@ -47,7 +47,8 @@ def process_raw_data(df: pd.DataFrame, *, source: str="CUR") -> pd.DataFrame:
                 debt=lambda x: x.short_debt + x.long_debt,
                 okved_four=lambda x: x.OKVED.map(extract_okved, na_action="ignore").astype(str),
                 OKVED=lambda x: x.OKVED.astype(str)
-            )
+            )\
+            .drop(columns=["short_debt_others"])
 
 
 def main(data_dir: str, output_path: str=None, source: str="CUR") -> Optional[pd.DataFrame]:

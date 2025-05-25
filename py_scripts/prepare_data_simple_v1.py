@@ -135,7 +135,6 @@ def filter_data(df: pd.DataFrame):
     )
 
     filtering_cols = [
-        "short_debt",
         "assets",
         "tangibility",
         "profitability"
@@ -143,6 +142,14 @@ def filter_data(df: pd.DataFrame):
     for item in filtering_cols:
         left, right = data[item].quantile([0.01, 0.99]).tolist()
         filter_cond = filter_cond & (data[item] > left) & (data[item] < right)
+
+    filtering_cols = [
+        "short_debt",
+        "long_debt"
+    ]
+    for item in filtering_cols:
+        left, right = data[item].quantile([0.01, 0.99]).tolist()
+        filter_cond = filter_cond & (data[item] < right)
 
     data = data.loc[filter_cond]
     print("Employees no less than 5: {}".format(len(data)))
@@ -161,9 +168,10 @@ def write_to_csv(df: pd.DataFrame, output_path: str):
         .reset_index().rename(columns={"index": "firm_id"})
 
     data = data.merge(inns, on=["inn"], how="inner")\
-                .assign(alternative_iv = lambda x: x["instrument"] * (1 + x["num_countries_prev_log"]))
+                .assign(alternative_iv = lambda x: x["instrument"] * (1 + x["num_countries_prev_log"]))\
+                .assign(exp_diff = lambda x: x.exporting - x.expansion)
     print("Final dataset length: {}".format(len(data)))
-    data.loc[:,["firm_id"] + FINAL_COLS + ["alternative_iv"]].to_csv(output_path, index=False)
+    data.loc[:,["firm_id"] + FINAL_COLS + ["alternative_iv", "exp_diff"]].to_csv(output_path, index=False)
 
 
 def main(
